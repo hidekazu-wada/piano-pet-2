@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ピアノれんしゅう♪</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>ピアノれんしゅう♪</h1>
+            <div class="mascot-container">
+                <img src="images/mascot.svg" alt="わんちゃん" class="mascot">
+            </div>
+        </header>
+
+        <main>
+            <!-- 曲選択画面 -->
+            <div id="song-selection" class="screen active">
+                <h2>きょくをえらんでね</h2>
+                <div class="song-cards">
+                    <div class="song-card" data-song="1">
+                        <img src="images/dog1.svg" alt="きょく1" class="song-icon">
+                        <h3>きょく1</h3>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="song1-progress"></div>
+                        </div>
+                    </div>
+                    <div class="song-card" data-song="2">
+                        <img src="images/dog2.svg" alt="きょく2" class="song-icon">
+                        <h3>きょく2</h3>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="song2-progress"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 動画視聴画面 -->
+            <div id="video-screen" class="screen">
+                <h2 id="practice-title">れんしゅう</h2>
+                <div class="video-container">
+                    <video id="practice-video" controls>
+                        <source src="" type="video/mp4">
+                    </video>
+                </div>
+                <button id="start-practice" class="btn btn-primary">れんしゅうをはじめる</button>
+            </div>
+
+            <!-- 練習画面 -->
+            <div id="practice-screen" class="screen">
+                <h2 id="current-practice-title">れんしゅうちゅう</h2>
+                <div class="practice-content">
+                    <div class="counter-container">
+                        <div class="counter-display">
+                            <span id="current-count">0</span> / <span id="target-count">5</span>
+                        </div>
+                        <button id="count-btn" class="btn btn-count">
+                            <img src="images/paw.svg" alt="カウント" class="paw-icon">
+                            れんしゅう！
+                        </button>
+                    </div>
+                    <div class="stamp-container" id="stamp-container"></div>
+                </div>
+                <div class="practice-controls">
+                    <button id="skip-btn" class="btn btn-secondary">つぎへ</button>
+                    <button id="complete-btn" class="btn btn-primary" style="display: none;">できた！</button>
+                </div>
+            </div>
+
+            <!-- 完了画面 -->
+            <div id="completion-screen" class="screen">
+                <h2>やったね！</h2>
+                <div class="badge-container">
+                    <img src="images/badge.svg" alt="バッジ" class="completion-badge">
+                </div>
+                <p class="completion-message">きょくをクリアしたよ！</p>
+                <button id="back-to-songs" class="btn btn-primary">ほかのきょくへ</button>
+            </div>
+        </main>
+
+        <!-- リセットボタン -->
+        <div class="reset-container">
+            <button id="reset-btn" class="btn btn-reset">きょうのきろくをけす</button>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
