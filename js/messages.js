@@ -232,6 +232,12 @@ class MessageManager {
   getMessage(messageId) {
     return this.messages.find(m => m.id === messageId);
   }
+
+  // Clear all messages
+  clearAllMessages() {
+    this.messages = [];
+    this.saveMessages();
+  }
 }
 
 // Initialize message manager
@@ -248,6 +254,10 @@ function playVoiceMessage(audioPath) {
 
 // Function to navigate to messages page
 function goToMessages() {
+  // 現在の練習状態を保存してからメッセージ画面へ遷移
+  if (typeof savePracticeSession === 'function') {
+    savePracticeSession();
+  }
   window.location.href = 'messages.html';
 }
 

@@ -39,6 +39,9 @@ function init() {
     // 通知バッジを更新
     messageManager.updateNotificationBadge();
     
+    // セッションから練習状態を復元
+    restorePracticeSession();
+    
     // イベントリスナーの設定
     elements.songCards.forEach(card => {
         card.addEventListener('click', () => selectSong(parseInt(card.dataset.song)));
@@ -226,6 +229,10 @@ function resetDailyProgress() {
         appState.dailyProgress[getToday()] = {};
         saveProgress();
         updateProgressBars();
+        
+        // メッセージも全て削除
+        messageManager.clearAllMessages();
+        
         alert('きろくをけしました！');
     }
 }
@@ -289,6 +296,52 @@ function getCurrentPracticeCount() {
     const songProgress = todayProgress[songKey] || {};
     const videoKey = `video${appState.currentVideo.id}`;
     return songProgress[videoKey] || 0;
+}
+
+// 練習セッションを保存
+function savePracticeSession() {
+    if (appState.currentSong) {
+        const sessionData = {
+            currentSongId: appState.currentSong.id,
+            currentVideoIndex: appState.currentVideoIndex,
+            activeScreen: Object.keys(elements.screens).find(key => 
+                elements.screens[key].classList.contains('active')
+            )
+        };
+        sessionStorage.setItem('practiceSession', JSON.stringify(sessionData));
+    }
+}
+
+// 練習セッションを復元
+function restorePracticeSession() {
+    const sessionData = sessionStorage.getItem('practiceSession');
+    if (sessionData) {
+        const { currentSongId, currentVideoIndex, activeScreen } = JSON.parse(sessionData);
+        
+        // 曲データを復元
+        const song = practiceConfig.songs.find(s => s.id === currentSongId);
+        if (song) {
+            appState.currentSong = song;
+            appState.currentVideoIndex = currentVideoIndex;
+            
+            // 画面に応じて適切な表示を行う
+            if (activeScreen === 'practice') {
+                // 練習画面を復元
+                appState.currentVideo = song.videos[currentVideoIndex];
+                startPractice();
+            } else if (activeScreen === 'video') {
+                // 動画画面を復元
+                showVideoScreen();
+            } else if (activeScreen === 'completion') {
+                // 完了画面を復元
+                showScreen('completion');
+            }
+            // songSelectionの場合は何もしない（デフォルト）
+        }
+        
+        // セッションデータをクリア
+        sessionStorage.removeItem('practiceSession');
+    }
 }
 
 // アプリケーション開始
