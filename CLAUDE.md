@@ -4,77 +4,71 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Piano Pet 2 (ピアノペット2) is a child-friendly piano practice web application designed for elementary school children. It uses gamification elements (stamps, badges, progress tracking) to make piano practice engaging. The application is built with vanilla HTML, CSS, and JavaScript - no build tools or package managers are required.
+Piano Pet 2 (ピアノペット2) is a child-friendly piano practice web application for elementary school children (specifically 3rd grade girls). Features gamification elements (stamps, badges, voice messages) to make piano practice engaging. Built with vanilla HTML, CSS, and JavaScript - no build tools or package managers required.
 
 ## Commands
 
-This is a static web application with no build process:
-- **Run locally**: Open `index.html` directly in a browser or use a simple HTTP server (e.g., `python -m http.server`)
-- **Deploy**: Upload all files to any static web hosting service (GitHub Pages, Netlify, etc.)
-- **No build/lint/test commands** - This is intentional to keep the project simple
+Static web application with no build process:
+- **Run locally**: Open `index.html` directly in a browser or use `python -m http.server`
+- **Deploy**: GitHub Actions workflow configured for GitHub Pages deployment (see `.github/workflows/deploy.yml`)
+- **No build/lint/test commands** - Intentionally simple
 
 ## Architecture
 
 ### Application Flow
 1. **Song Selection** → 2. **Video Preview** → 3. **Practice Counting** → 4. **Completion**
-   - Voice messages are generated during practice (first attempt or goal achievement)
-   - Messages can be viewed from the notification icon in the header
+   - Voice messages delivered when practice goals are achieved
+   - Messages accessible via notification icon (📮) in header
 
-### Core State Management (js/app.js)
-- Single `appState` object manages current song, video, and practice counts
-- Progress stored in localStorage with daily auto-reset functionality
-- State structure: `{ currentSong, currentVideoIndex, currentVideo, practiceCount, dailyProgress }`
+### Core Components
 
-### Data Configuration (js/config.js)
-- Songs and practice videos defined in `SONGS` constant
-- Each song has 5 practice segments with different target counts
-- Video files stored in `videos/song{id}/{filename}.mp4`
+**State Management (js/app.js)**
+- `appState` object: `{ currentSong, currentVideoIndex, currentVideo, practiceCount, dailyProgress }`
+- Session persistence using `sessionStorage` for navigation continuity
+- Progress persistence using `localStorage` with daily auto-reset
 
-### Screen Management
-- Single-page application using CSS classes for screen transitions
+**Data Configuration (js/config.js)**
+- 2 songs configured: "ミュゼット" and "老いぼれ猫の夢"
+- Each song has 5 practice segments with varying target counts (1-10)
+- Video files: `videos/song{id}/{01-05}.mp4`
+
+**Voice Message System (js/messages.js)**
+- 30 personalized messages from dog character ("僕") to player ("ひなのちゃん")
+- Messages triggered only on goal achievement
+- Stored in localStorage: `pianoMessages`
+- Auto-cleanup after 7 days
+- Audio files: `voice/cheer{01-30}.mp3`
+
+### Storage Keys
+- `pianoPracticeData`: Daily practice progress
+- `pianoMessages`: Voice message history
+- `practiceSession`: Temporary session state for navigation
+
+### Screen Navigation
+- Single-page app using `.screen` and `.screen.active` CSS classes
 - Screens: song-selection, video-screen, practice-screen, completion-screen
-- Active screen controlled by `.screen.active` CSS class
+- Separate messages.html for message viewing
 
-### Progress Tracking
-- localStorage key: `pianoPracticeData`
-- Format: `{ lastDate: "YYYY-MM-DD", progress: { date: { songKey: { videoKey: count } } } }`
-- Daily reset checks date on app initialization
+### Reset Functionality
+"今日の記録を消す" button clears both:
+- Practice progress for current day
+- All voice messages
 
-### Voice Message System (js/messages.js)
-- Messages generated on first practice attempt and goal achievement
-- Random encouragement messages for regular practice
-- Stored in localStorage key: `pianoMessages`
-- Auto-deletion of messages older than 7 days
-- Message list and detail views in messages.html
+## File Structure Highlights
 
-## Key Implementation Details
-
-### Adding New Songs
-1. Add video files to `videos/song{n}/` directory
-2. Update `SONGS` configuration in js/config.js:
-```javascript
-song3: {
-  id: 3,
-  name: "新しい曲",
-  videos: [
-    { id: 1, file: "01.mp4", title: "パート1", targetCount: 5 }
-  ]
-}
 ```
-3. Add song card HTML in index.html
-4. Add corresponding dog icon in images/
+├── docs/              # GitHub Pages deployment (if using /docs source)
+├── voice/             # Voice message MP3 files (cheer01-30.mp3)
+├── videos/            # Practice videos organized by song
+│   ├── song1/        # 5 videos per song
+│   └── song2/
+└── .github/workflows/deploy.yml  # GitHub Actions deployment
+```
 
-### Modifying Practice Counts
-Edit target counts in js/config.js for each video segment. The practice screen will automatically update to reflect new targets.
+## Implementation Notes
 
-### Styling Customization
-- Color palette defined in CSS custom properties can be modified in style.css
-- Responsive breakpoints: 1024px (iPad), 768px (tablet)
-- All animations use CSS keyframes (stampAppear, badgeAppear)
-
-## Important Notes
-
-- **Japanese Language**: All user-facing text is in Japanese (hiragana for children)
-- **No External Dependencies**: Intentionally kept simple with no npm packages
-- **Browser Compatibility**: Targets modern browsers with ES6+ support
-- **Touch Optimized**: Designed primarily for iPad use with large touch targets
+- **Player Name**: Hardcoded as "ひなのちゃん" throughout messages
+- **Responsive Design**: Breakpoints at 1024px (iPad) and 768px (mobile)
+- **Notification Badge**: Updates automatically when new messages arrive
+- **Daily Reset**: Checks date on every app initialization
+- **Session Recovery**: Returns to previous screen after viewing messages
