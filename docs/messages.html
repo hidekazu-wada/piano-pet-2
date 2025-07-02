@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>メッセージ - ピアノペット2♪</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/messages.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <button class="back-button" onclick="window.location.href='index.html?return=true'">
+          ← 練習にもどる
+        </button>
+        <h1>ワンちゃんからのメッセージ</h1>
+      </header>
+
+      <main>
+        <!-- メッセージ一覧画面 -->
+        <div id="message-list-screen" class="screen active">
+          <div id="message-list" class="message-list">
+            <!-- メッセージはJavaScriptで動的に追加 -->
+          </div>
+          <div id="no-messages" class="no-messages" style="display: none;">
+            <img src="images/mascot.svg" alt="わんちゃん" class="no-messages-mascot" />
+            <p>まだメッセージがないワン！<br>練習をがんばってね♪</p>
+          </div>
+        </div>
+
+        <!-- メッセージ詳細画面 -->
+        <div id="message-detail-screen" class="screen">
+          <div class="message-detail-container">
+            <div class="letter-paper">
+              <div class="letter-header">
+                <img src="images/mascot.svg" alt="わんちゃん" class="letter-mascot" />
+                <div class="letter-info">
+                  <div class="letter-date" id="detail-date"></div>
+                  <div class="letter-practice-info" id="detail-practice-info"></div>
+                </div>
+              </div>
+              <div class="letter-body">
+                <p id="detail-message" class="message-text"></p>
+              </div>
+              <div class="letter-footer">
+                <button id="play-voice-btn" class="btn btn-voice">
+                  🔊 声を聞く
+                </button>
+              </div>
+            </div>
+            <button class="btn btn-secondary back-to-list" onclick="showMessageList()">
+              一覧にもどる
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="js/messages.js"></script>
+    <script>
+      // Initialize message list
+      let currentMessageId = null;
+
+      // Show message list
+      function showMessageList() {
+        document.getElementById('message-list-screen').classList.add('active');
+        document.getElementById('message-detail-screen').classList.remove('active');
+      }
+
+      // Show message detail
+      function showMessageDetail(messageId) {
+        currentMessageId = messageId;
+        const message = messageManager.getMessage(messageId);
+        
+        if (!message) return;
+        
+        // Mark as read
+        messageManager.markAsRead(messageId);
+        
+        // Update detail view
+        document.getElementById('detail-date').textContent = `${message.date} ${message.time}`;
+        document.getElementById('detail-practice-info').textContent = 
+          `「${message.practiceInfo.songName}」${message.practiceInfo.videoTitle} (${message.practiceInfo.count}/${message.practiceInfo.targetCount}回)`;
+        document.getElementById('detail-message').textContent = message.text;
+        
+        // Set up voice button
+        document.getElementById('play-voice-btn').onclick = () => {
+          playVoiceMessage(message.audio);
+        };
+        
+        // Switch screens
+        document.getElementById('message-list-screen').classList.remove('active');
+        document.getElementById('message-detail-screen').classList.add('active');
+      }
+
+      // Render message list
+      function renderMessageList() {
+        const messages = messageManager.getAllMessages();
+        const listContainer = document.getElementById('message-list');
+        const noMessagesContainer = document.getElementById('no-messages');
+        
+        listContainer.innerHTML = '';
+        
+        if (messages.length === 0) {
+          listContainer.style.display = 'none';
+          noMessagesContainer.style.display = 'flex';
+        } else {
+          listContainer.style.display = 'block';
+          noMessagesContainer.style.display = 'none';
+          
+          messages.forEach(message => {
+            const messageItem = document.createElement('div');
+            messageItem.className = `message-item ${message.read ? 'read' : 'unread'}`;
+            messageItem.onclick = () => showMessageDetail(message.id);
+            
+            messageItem.innerHTML = `
+              <div class="message-icon">📮</div>
+              <div class="message-content">
+                <div class="message-header">
+                  <span class="message-date">${message.date} ${message.time}</span>
+                  ${!message.read ? '<span class="unread-badge">NEW</span>' : ''}
+                </div>
+                <div class="message-preview">${message.text.substring(0, 30)}...</div>
+                <div class="message-song-info">
+                  ${message.practiceInfo.songName} - ${message.practiceInfo.videoTitle}
+                </div>
+              </div>
+            `;
+            
+            listContainer.appendChild(messageItem);
+          });
+        }
+      }
+
+      // Initialize on page load
+      document.addEventListener('DOMContentLoaded', () => {
+        renderMessageList();
+      });
+    </script>
+  </body>
+</html>
