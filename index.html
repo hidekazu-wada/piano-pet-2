@@ -16,6 +16,10 @@
         <div class="mascot-container">
           <img src="images/mascot.svg" alt="わんちゃん" class="mascot" />
         </div>
+        <div class="notification-container" onclick="goToMessages()">
+          <span class="envelope-icon">📮</span>
+          <span id="notification-badge" class="notification-badge">0</span>
+        </div>
       </header>
 
       <main>
@@ -103,6 +107,7 @@
     </div>
 
     <script src="js/config.js"></script>
+    <script src="js/messages.js"></script>
     <script src="js/app.js"></script>
   </body>
 </html>
