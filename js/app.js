@@ -36,6 +36,9 @@ function init() {
     checkAndResetDaily();
     updateProgressBars();
     
+    // 通知バッジを更新
+    messageManager.updateNotificationBadge();
+    
     // イベントリスナーの設定
     elements.songCards.forEach(card => {
         card.addEventListener('click', () => selectSong(parseInt(card.dataset.song)));
@@ -80,18 +83,31 @@ function showVideoScreen() {
 
 // 練習開始
 function startPractice() {
-    appState.practiceCount = 0;
+    // 現在の練習回数を取得（初回練習かどうかの判定用）
+    appState.practiceCount = getCurrentPracticeCount();
     elements.currentPracticeTitle.textContent = appState.currentVideo.title;
-    elements.currentCount.textContent = '0';
+    elements.currentCount.textContent = appState.practiceCount;
     elements.targetCount.textContent = appState.currentVideo.targetCount;
     elements.stampContainer.innerHTML = '';
-    elements.completeBtn.style.display = 'none';
+    
+    // 既に目標達成している場合は完了ボタンを表示
+    if (appState.practiceCount >= appState.currentVideo.targetCount) {
+        elements.completeBtn.style.display = 'inline-block';
+    } else {
+        elements.completeBtn.style.display = 'none';
+    }
+    
+    // 既存のスタンプを表示
+    for (let i = 0; i < appState.practiceCount; i++) {
+        addStamp();
+    }
     
     showScreen('practice');
 }
 
 // カウントアップ
 function incrementCount() {
+    const previousCount = appState.practiceCount;
     appState.practiceCount++;
     elements.currentCount.textContent = appState.practiceCount;
     
@@ -107,6 +123,9 @@ function incrementCount() {
     
     // 進捗を保存
     saveVideoProgress();
+    
+    // ボイスメッセージ生成（練習時）
+    generateVoiceMessageIfNeeded(previousCount);
 }
 
 // スタンプ追加
@@ -241,6 +260,35 @@ function playCompletionSound() {
     // 音声ファイルがある場合はここで再生
     // const audio = new Audio('sounds/completion.mp3');
     // audio.play();
+}
+
+// ボイスメッセージ生成の判定と実行
+function generateVoiceMessageIfNeeded(previousCount) {
+    // メッセージ生成のための情報を準備
+    const practiceInfo = {
+        songId: appState.currentSong.id,
+        songName: appState.currentSong.name,
+        videoId: appState.currentVideo.id,
+        videoTitle: appState.currentVideo.title,
+        previousCount: previousCount,
+        currentCount: appState.practiceCount,
+        targetCount: appState.currentVideo.targetCount
+    };
+    
+    // 目標達成時のみメッセージを生成
+    if (appState.practiceCount === appState.currentVideo.targetCount) {
+        messageManager.generateMessage(practiceInfo);
+    }
+}
+
+// 現在の練習回数を取得
+function getCurrentPracticeCount() {
+    const today = getToday();
+    const todayProgress = appState.dailyProgress[today] || {};
+    const songKey = `song${appState.currentSong.id}`;
+    const songProgress = todayProgress[songKey] || {};
+    const videoKey = `video${appState.currentVideo.id}`;
+    return songProgress[videoKey] || 0;
 }
 
 // アプリケーション開始
